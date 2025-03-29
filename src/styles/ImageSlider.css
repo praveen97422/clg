@@ -1,0 +1,11 @@
+.image-slider {
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .slider-image {
+    width: 33.33%;
+    object-fit: cover;
+  }
+  

@@ -1,0 +1,110 @@
+/* Navbar.css */
+
+/* Top Banner */
+.top-banner {
+    background-color: black;
+    color: rgb(215, 194, 194);
+    text-align: center;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+  
+  .promo-code {
+    background-color: #e63946;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+  }
+  
+  /* Navbar Container */
+  .navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 40px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Logo */
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+  
+  /* Search Bar */
+  .search-bar {
+    position: relative;
+    width: 35%;
+  }
+  
+  .search-bar input {
+    width: 100%;
+    padding: 10px 10px 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    background-color: #f5f5f5;
+    outline: none;
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 15px; 
+    top: 50%;
+    transform: translateY(-50%);
+    color: gray;
+    cursor: pointer;
+  }
+  
+  /* Navigation Icons */
+  .nav-icons {
+    display: flex;
+    gap: 20px;
+    font-size: 20px;
+    color: #333;
+  }
+  
+  /* Navigation Menu */
+  .nav-menu {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .nav-menu a {
+    text-decoration: none;
+    color: #555;
+    transition: color 0.3s;
+  }
+  
+  .nav-menu a:hover {
+    color: black;
+  }
+  
+  /* Badge Styles */
+  .badge-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .badge {
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 5px;
+  }
+  
+  .badge.new {
+    background-color: #ffd700;
+    color: black;
+  }
+  
+  .badge.ala-mode {
+    background-color: #1e90ff;
+    color: white;
+  }
+  

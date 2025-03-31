@@ -42,15 +42,15 @@
 }
 
 .product-name {
-    font-family: 'Times New Roman', serif; /* Updated font */
-    font-size: 20px; /* Match navbar font size */
-    font-weight: bold; /* Match navbar font weight */
+    font-family: 'Times New Roman', serif;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .product-price {
-    font-family: 'Times New Roman', serif; /* Updated font */
-    font-size: 18px; /* Match navbar font size */
-    font-weight: 500; /* Match navbar font weight */
+    font-family: 'Times New Roman', serif;
+    font-size: 18px;
+    font-weight: 500;
     margin-top: 10px;
 }
 

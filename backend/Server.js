@@ -41,7 +41,13 @@ mongoose.connect(process.env.MONGO_URI, {
 const ProductSchema = new mongoose.Schema({
   name: String,
   price: Number,
+  mrp: Number,
+  discount: Number,
+  category: String,
+  stock: Number,
   imageUrl: String,
+  createdAt: { type: Date, default: Date.now },
+  timestamp: { type: Date, default: Date.now }, // Add timestamp field
 });
 const Product = mongoose.model("Product", ProductSchema);
 
@@ -53,7 +59,12 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     const newProduct = new Product({
       name: req.body.name,
       price: req.body.price,
+      mrp: req.body.mrp,
+      discount: req.body.discount,
+      category: req.body.category,
+      stock: req.body.stock,
       imageUrl: `/uploads/${req.file.filename}`,
+      timestamp: new Date().toISOString(), // Set timestamp to current time
     });
 
     const savedProduct = await newProduct.save();
@@ -71,6 +82,21 @@ app.get("/products", async (req, res) => {
     res.json({ success: true, products });
   } catch (error) {
     console.error("Error fetching products:", error);
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+// Edit Product Route
+app.put("/edit/:id", async (req, res) => {
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+
+    if (!updatedProduct) return res.status(404).json({ success: false, message: "Product not found" });
+
+    res.status(200).json({ success: true, product: updatedProduct, message: "Product updated successfully" });
+
+  } catch (error) {
+    console.error("Error updating product:", error.message);
     res.status(500).json({ success: false, message: "Server Error", error });
   }
 });

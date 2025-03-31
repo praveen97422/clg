@@ -1,0 +1,22 @@
+.product-details-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.product-details-container h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.product-details-container img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.product-details-container p {
+  font-size: 18px;
+  margin: 10px 0;
+}

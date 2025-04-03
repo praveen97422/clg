@@ -12,7 +12,7 @@ export default function AppRoutes() {
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<><ImageSlider /><JewelryCards /></Route><Home /></>} /> {/* Updated to render only Home */}
+        <Route path="/" element={<><ImageSlider /><JewelryCards /><Home /></>} /> {/* Updated to render only Home */}
         <Route path="/admin" element={<ProductManager />} />
         <Route path="/product/:id" element={<ProductDetails />} /> {/* Add route for product details */}
       </Routes>

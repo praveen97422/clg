@@ -45,6 +45,7 @@ const ProductSchema = new mongoose.Schema({
   discount: Number,
   category: String,
   stock: Number,
+  description: String, 
   imageUrl: String,
   createdAt: { type: Date, default: Date.now },
   timestamp: { type: Date, default: Date.now }, // Add timestamp field
@@ -64,6 +65,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
       category: req.body.category,
       stock: req.body.stock,
       imageUrl: `/uploads/${req.file.filename}`,
+      description: req.body.description, // Include description in new product
       timestamp: new Date().toISOString(), // Set timestamp to current time
     });
 
@@ -79,6 +81,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 app.get("/products", async (req, res) => {
   try {
     const products = await Product.find();
+ // console.log("Fetched Products:", products); // Log the fetched products
     res.json({ success: true, products });
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -89,7 +92,22 @@ app.get("/products", async (req, res) => {
 // Edit Product Route
 app.put("/edit/:id", async (req, res) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+console.log("Updating Product Data:", req.body); // Log the incoming product data
+const updatedProduct = await Product.findById(req.params.id);
+// console.log("Updating Product:", updatedProduct); // Log the product being updated
+if (!updatedProduct) return res.status(404).json({ success: false, message: "Product not found" });
+
+updatedProduct.name = req.body.name;
+updatedProduct.price = req.body.price;
+updatedProduct.mrp = req.body.mrp;
+updatedProduct.discount = req.body.discount;
+updatedProduct.category = req.body.category;
+updatedProduct.stock = req.body.stock;
+updatedProduct.description = req.body.description; // Update description
+if (req.file) {
+    updatedProduct.imageUrl = `/uploads/${req.file.filename}`;
+}
+await updatedProduct.save();
 
     if (!updatedProduct) return res.status(404).json({ success: false, message: "Product not found" });
 

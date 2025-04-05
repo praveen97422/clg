@@ -1,8 +1,11 @@
 import { FaSearch, FaHeart, FaShoppingBag, FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./styles/Navbar.css";
+import { useCart } from "./CartContext.jsx";
 
 export default function Navbar() {
+  const { cart } = useCart();
+    
   return (
     <div>
       {/* Top Banner */}
@@ -27,7 +30,10 @@ export default function Navbar() {
         <div className="nav-icons">
           <FaUser />
           <FaHeart />
-          <FaShoppingBag />
+          <Link to="/cart" className="cart-icon">
+            <FaShoppingBag />
+            {cart.length > 0 && <span className="cart-count">{cart.length}</span>}
+          </Link>
         </div>
       </div>
 
@@ -38,7 +44,7 @@ export default function Navbar() {
         <Link to="/">Collection</Link>
         <Link to="/">Shop By</Link>
         <Link to="/">Gifting</Link>
-        <Link to="/">Return & Exchange</Link>
+        {/* <Link to="/">Return & Exchange</Link> */}
         <Link to="/">About Us</Link>
         <Link to="/admin" className="admin-link">Admin</Link>
       </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./CartContext.jsx";
-import Navbar from "./navbar.jsx";
+import Navbar from "./Navbar.jsx";
 import ImageSlider from "./ImageSlider.jsx";
 import JewelryCards from "./JewelryCards.jsx";
 import ProductDetails from "./ProductDetails.jsx"; // Import the ProductDetails component

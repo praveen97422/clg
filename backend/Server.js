@@ -8,19 +8,16 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors()); // Enable CORS
-app.use(express.json()); // Middleware for parsing JSON
+app.use(cors());
+app.use(express.json());
 
-// Ensure "uploads/" directory exists
 const uploadDir = "uploads/";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-// Serve static files from "uploads" folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: uploadDir,
   filename: (req, file, cb) => {
@@ -29,7 +26,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -37,7 +33,6 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log("✅ MongoDB connected successfully"))
 .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// Product Schema
 const ProductSchema = new mongoose.Schema({
   name: String,
   price: Number,
@@ -45,87 +40,170 @@ const ProductSchema = new mongoose.Schema({
   discount: Number,
   category: String,
   stock: Number,
-  description: String, 
+  description: String,
   imageUrl: String,
   createdAt: { type: Date, default: Date.now },
-  timestamp: { type: Date, default: Date.now }, // Add timestamp field
+  timestamp: { type: Date, default: Date.now },
 });
 const Product = mongoose.model("Product", ProductSchema);
 
-// Upload Product Route
 app.post("/upload", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: "No image uploaded" });
 
+    const productData = JSON.parse(req.body.data);
     const newProduct = new Product({
-      name: req.body.name,
-      price: req.body.price,
-      mrp: req.body.mrp,
-      discount: req.body.discount,
-      category: req.body.category,
-      stock: req.body.stock,
+      name: productData.name,
+      price: Number(productData.price),
+      mrp: Number(productData.mrp),
+      discount: Number(productData.discount),
+      category: productData.category,
+      stock: Number(productData.stock),
+      description: productData.description,
       imageUrl: `/uploads/${req.file.filename}`,
-      description: req.body.description, // Include description in new product
-      timestamp: new Date().toISOString(), // Set timestamp to current time
+      timestamp: new Date().toISOString()
     });
 
     const savedProduct = await newProduct.save();
-    res.status(201).json({ success: true, product: savedProduct });
+    // Return all product fields in response
+    const responseProduct = {
+      _id: savedProduct._id,
+      name: savedProduct.name,
+      price: savedProduct.price,
+      mrp: savedProduct.mrp,
+      discount: savedProduct.discount,
+      category: savedProduct.category,
+      stock: savedProduct.stock,
+      description: savedProduct.description,
+      imageUrl: savedProduct.imageUrl,
+      timestamp: savedProduct.timestamp,
+      createdAt: savedProduct.createdAt
+    };
+    res.status(201).json({ success: true, product: responseProduct });
   } catch (error) {
-    console.error("Error uploading product:", error);
     res.status(500).json({ success: false, message: "Server Error", error });
   }
 });
 
-// Fetch All Products
 app.get("/products", async (req, res) => {
   try {
-    const products = await Product.find();
- // console.log("Fetched Products:", products); // Log the fetched products
-    res.json({ success: true, products });
+    const products = await Product.find().lean();
+    // Map products to include all fields
+    const responseProducts = products.map(product => ({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      mrp: product.mrp,
+      discount: product.discount,
+      category: product.category,
+      stock: product.stock,
+      description: product.description,
+      imageUrl: product.imageUrl,
+      timestamp: product.timestamp,
+      createdAt: product.createdAt
+    }));
+    res.json({ success: true, products: responseProducts });
   } catch (error) {
-    console.error("Error fetching products:", error);
     res.status(500).json({ success: false, message: "Server Error", error });
   }
 });
 
-// Edit Product Route
-app.put("/edit/:id", async (req, res) => {
+app.put("/edit/:id", upload.single("image"), async (req, res) => {
   try {
-console.log("Updating Product Data:", req.body); // Log the incoming product data
-const updatedProduct = await Product.findById(req.params.id);
-// console.log("Updating Product:", updatedProduct); // Log the product being updated
-if (!updatedProduct) return res.status(404).json({ success: false, message: "Product not found" });
-
-updatedProduct.name = req.body.name;
-updatedProduct.price = req.body.price;
-updatedProduct.mrp = req.body.mrp;
-updatedProduct.discount = req.body.discount;
-updatedProduct.category = req.body.category;
-updatedProduct.stock = req.body.stock;
-updatedProduct.description = req.body.description; // Update description
-if (req.file) {
-    updatedProduct.imageUrl = `/uploads/${req.file.filename}`;
-}
-await updatedProduct.save();
-
+    const updatedProduct = await Product.findById(req.params.id);
     if (!updatedProduct) return res.status(404).json({ success: false, message: "Product not found" });
 
-    res.status(200).json({ success: true, product: updatedProduct, message: "Product updated successfully" });
+    // Update all fields from JSON data
+    // Get data directly from request body like stock endpoint
+    const { name, price, mrp, discount, category, stock, description } = req.body;
+    updatedProduct.name = name;
+    updatedProduct.price = price;
+    updatedProduct.mrp = mrp;
+    updatedProduct.discount = discount;
+    updatedProduct.category = category;
+    updatedProduct.stock = stock;
+    updatedProduct.description = description;
+    updatedProduct.timestamp = new Date().toISOString();
 
+    // Handle image update
+    if (req.file) {
+      // Delete old image if exists
+      if (updatedProduct.imageUrl) {
+        const oldImagePath = path.join(__dirname, updatedProduct.imageUrl);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      updatedProduct.imageUrl = `/uploads/${req.file.filename}`;
+    }
+
+    await updatedProduct.save();
+    // Return all product fields in response
+    const responseProduct = {
+      _id: updatedProduct._id,
+      name: updatedProduct.name,
+      price: updatedProduct.price,
+      mrp: updatedProduct.mrp,
+      discount: updatedProduct.discount,
+      category: updatedProduct.category,
+      stock: updatedProduct.stock,
+      description: updatedProduct.description,
+      imageUrl: updatedProduct.imageUrl,
+      timestamp: updatedProduct.timestamp,
+      createdAt: updatedProduct.createdAt
+    };
+    res.status(200).json({ 
+      success: true, 
+      product: responseProduct, 
+      message: "Product updated successfully" 
+    });
   } catch (error) {
-    console.error("Error updating product:", error.message);
     res.status(500).json({ success: false, message: "Server Error", error });
   }
 });
 
-// Delete Product Route (Also Deletes Image File)
+app.route("/update-stock/:id")
+  .put(async (req, res) => {
+    await handleStockUpdate(req, res);
+  })
+  .get(async (req, res) => {
+    await handleStockUpdate(req, res);
+  });
+
+async function handleStockUpdate(req, res) {
+  try {
+    const { quantity } = req.body;
+    const product = await Product.findById(req.params.id);
+    
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    if (product.stock < quantity) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Insufficient stock available" 
+      });
+    }
+
+    product.stock -= quantity;
+    await product.save();
+
+    res.status(200).json({ 
+      success: true, 
+      product,
+      message: "Stock updated successfully" 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+};
+
 app.delete("/delete/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    // Delete the image file
     const imagePath = path.join(__dirname, product.imageUrl);
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
@@ -134,12 +212,14 @@ app.delete("/delete/:id", async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
     res.status(200).json({ success: true, message: "Product and image deleted successfully" });
   } catch (error) {
-    console.error("Error deleting product:", error);
     res.status(500).json({ success: false, message: "Server Error", error });
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+app.get('/test-stock-endpoint', (req, res) => {
+  res.json({ message: 'Test endpoint working', status: 200 });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server is running on http://0.0.0.0:${PORT}`);
 });

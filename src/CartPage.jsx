@@ -1,8 +1,8 @@
 import React from "react";
 import { useCart } from "./CartContext.jsx";
 import { Link } from "react-router-dom";
-import "./styles/ProductDetails.css";
-import "./styles/Cartpage.css";
+// import "./styles/ProductDetails.css";
+import "./styles/CartPage.css";
 
 const CartPage = () => {
   const { cart, dispatch } = useCart();
@@ -70,7 +70,12 @@ const CartPage = () => {
           </div>
           <div className="cart-summary">
             <h3>Total: ₹{calculateTotal()}</h3>
-            <button className="checkout-button">Proceed to Checkout</button>
+            <button 
+              className="checkout-button"
+              onClick={() => dispatch({ type: "CHECKOUT" })}
+            >
+              Proceed to Checkout
+            </button>
           </div>
         </>
       )}

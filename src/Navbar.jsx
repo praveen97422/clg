@@ -2,9 +2,15 @@ import { FaSearch, FaHeart, FaShoppingBag, FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./styles/Navbar.css";
 import { useCart } from "./CartContext.jsx";
+import { useState } from "react";
+import { useAuth } from "./auth/AuthContext.jsx";
+import LoginModal from "./auth/LoginModal.jsx";
 
 export default function Navbar() {
   const { cart } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
     
   return (
     <div>
@@ -28,7 +34,21 @@ export default function Navbar() {
         
         {/* Icons */}
         <div className="nav-icons">
-          <FaUser />
+          <div className="profile-icon" onClick={() => setShowDropdown(!showDropdown)}>
+            <FaUser />
+            {showDropdown && (
+              <div className="profile-dropdown">
+                {isAuthenticated ? (
+                  <>
+                    <div className="dropdown-item">Hi, {user?.name}</div>
+                    <div className="dropdown-item" onClick={logout}>Logout</div>
+                  </>
+                ) : (
+                  <div className="dropdown-item" onClick={() => setShowLoginModal(true)}>Login</div>
+                )}
+              </div>
+            )}
+          </div>
           <FaHeart />
           <Link to="/cart" className="cart-icon">
             <FaShoppingBag />
@@ -37,12 +57,17 @@ export default function Navbar() {
         </div>
       </div>
 
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} />
+      )}
+
       {/* Navigation Menu */}
       <div className="nav-menu">
-        <Link to="/">New Arrivals</Link>
+        <Link to="/">Home</Link>
+        <Link to="/newarrivals">New Arrivals</Link>
         <Link to="/">Best Seller</Link>
         <Link to="/">Collection</Link>
-        <Link to="/">Shop By</Link>
+        <Link to="/ShopBy">Shop By</Link>
         <Link to="/">Gifting</Link>
         {/* <Link to="/">Return & Exchange</Link> */}
         <Link to="/">About Us</Link>

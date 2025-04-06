@@ -51,15 +51,14 @@ app.post("/upload", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: "No image uploaded" });
 
-    const productData = JSON.parse(req.body.data);
     const newProduct = new Product({
-      name: productData.name,
-      price: Number(productData.price),
-      mrp: Number(productData.mrp),
-      discount: Number(productData.discount),
-      category: productData.category,
-      stock: Number(productData.stock),
-      description: productData.description,
+      name: req.body.name,
+      price: Number(req.body.price),
+      mrp: Number(req.body.mrp),
+      discount: Number(req.body.discount),
+      category: req.body.category,
+      stock: Number(req.body.stock),
+      description: req.body.description,
       imageUrl: `/uploads/${req.file.filename}`,
       timestamp: new Date().toISOString()
     });
@@ -125,7 +124,7 @@ app.put("/edit/:id", upload.single("image"), async (req, res) => {
     updatedProduct.description = description;
     updatedProduct.timestamp = new Date().toISOString();
 
-    // Handle image update
+    // Handle image update if new file provided
     if (req.file) {
       // Delete old image if exists
       if (updatedProduct.imageUrl) {
@@ -135,6 +134,8 @@ app.put("/edit/:id", upload.single("image"), async (req, res) => {
         }
       }
       updatedProduct.imageUrl = `/uploads/${req.file.filename}`;
+    } else if (!updatedProduct.imageUrl) {
+      return res.status(400).json({ success: false, message: "Product must have an image" });
     }
 
     await updatedProduct.save();

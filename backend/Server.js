@@ -1,10 +1,63 @@
 require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
+
+// Middleware to verify admin email
+const verifyAdmin = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Authorization header missing" 
+    });
+  }
+  
+  try {
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Token missing" 
+      });
+    }
+
+    // Verify Firebase JWT token
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userEmail = decodedToken.email;
+
+    if (userEmail !== 'havyajewellery@gmail.com') {
+      return res.status(403).json({ 
+        success: false, 
+        message: "Access denied. Admin privileges required" 
+      });
+    }
+
+    // Attach user info to request
+    req.user = { email: userEmail };
+    next();
+  } catch (error) {
+    console.error('Admin verification error:', error);
+    res.status(401).json({ 
+      success: false, 
+      message: "Invalid or expired token" 
+    });
+  }
+};
 const mongoose = require("mongoose");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const admin = require("firebase-admin");
+
+// Initialize Firebase Admin SDK from environment variables
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+  })
+});
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -45,9 +98,144 @@ const ProductSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   timestamp: { type: Date, default: Date.now },
 });
+const UserSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  cart: [{
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+    quantity: { type: Number, default: 1 }
+  }]
+});
+const User = mongoose.model("User", UserSchema);
+
+// Authentication middleware
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ success: false, message: "Unauthorized" });
+  
+  try {
+    const token = authHeader.split(' ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = { email: decodedToken.email };
+    next();
+  } catch (error) {
+    res.status(401).json({ success: false, message: "Invalid token" });
+  }
+};
+
 const Product = mongoose.model("Product", ProductSchema);
 
-app.post("/upload", upload.single("image"), async (req, res) => {
+// Cart Endpoints
+app.get("/cart", authenticate, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email }).populate('cart.productId');
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    res.json({ success: true, cart: user.cart });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.post("/cart", authenticate, async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    let user = await User.findOne({ email: req.user.email });
+    if (!user) {
+      user = new User({ email: req.user.email, cart: [] });
+    }
+
+    const existingItem = user.cart.find(item => item.productId.toString() === productId);
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      user.cart.push({ productId, quantity });
+    }
+
+    await user.save();
+    res.status(201).json({ success: true, cart: user.cart });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.put("/cart/:productId", authenticate, async (req, res) => {
+  try {
+    const { quantity } = req.body;
+    const user = await User.findOne({ email: req.user.email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const item = user.cart.find(item => item.productId.toString() === req.params.productId);
+    if (!item) return res.status(404).json({ success: false, message: "Item not in cart" });
+
+    item.quantity = quantity;
+    await user.save();
+    res.json({ success: true, cart: user.cart });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.delete("/cart/:productId", authenticate, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    user.cart = user.cart.filter(item => item.productId.toString() !== req.params.productId);
+    await user.save();
+    res.json({ success: true, cart: user.cart });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.delete("/cart", authenticate, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    user.cart = [];
+    await user.save();
+    res.json({ success: true, message: "Cart cleared" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.post("/checkout", authenticate, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email }).populate('cart.productId');
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Check stock for all items first
+    for (const item of user.cart) {
+      if (item.productId.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${item.productId.name}`,
+          productId: item.productId._id
+        });
+      }
+    }
+
+    // Process each item
+    for (const item of user.cart) {
+      item.productId.stock -= item.quantity;
+      await item.productId.save();
+    }
+
+    // Clear cart after successful checkout
+    user.cart = [];
+    await user.save();
+
+    res.json({ success: true, message: "Checkout successful" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Checkout failed", error });
+  }
+});
+
+app.post("/upload", verifyAdmin, upload.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: "No image uploaded" });
 
@@ -107,7 +295,7 @@ app.get("/products", async (req, res) => {
   }
 });
 
-app.put("/edit/:id", upload.single("image"), async (req, res) => {
+app.put("/edit/:id", verifyAdmin, upload.single("image"), async (req, res) => {
   try {
     const updatedProduct = await Product.findById(req.params.id);
     if (!updatedProduct) return res.status(404).json({ success: false, message: "Product not found" });
@@ -200,7 +388,7 @@ async function handleStockUpdate(req, res) {
   }
 };
 
-app.delete("/delete/:id", async (req, res) => {
+app.delete("/delete/:id", verifyAdmin, async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });

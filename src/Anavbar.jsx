@@ -132,7 +132,7 @@ export default function Navbar() {
         <Link to="/">Collection</Link>
         <Link to="/ShopBy">Shop By</Link>
         <Link to="/">Gifting</Link>
-        {/* <Link to="/">Return & Exchange</Link> */}
+        <Link to="admin">Admin</Link>
         <Link to="/">About Us</Link>
       </div>
     </div>

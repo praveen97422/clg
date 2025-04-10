@@ -6,14 +6,19 @@ import "./styles/ProductDetails.css";
 const ProductDetails = () => {
   const location = useLocation();
   const { product } = location.state || {};
-  const { dispatch } = useCart(); // Get cart functions
+  const { addToCart } = useCart(); // Get cart functions
 
   if (!product) {
     return <p>No product details available.</p>;
   }
 
-  const handleAddToCart = () => {
-    dispatch({ type: "ADD_TO_CART", payload: product });
+  const handleAddToCart = async () => {
+    try {
+      await addToCart(product._id);
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      alert("Please login to add items to your cart");
+    }
   };
 
   return (

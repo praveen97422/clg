@@ -5,24 +5,25 @@ import { Link } from "react-router-dom";
 import "./styles/CartPage.css";
 
 const CartPage = () => {
-  const { cart, dispatch } = useCart();
+  const { cart, removeFromCart, updateQuantity, checkout, loading } = useCart();
 
   const handleRemove = (productId) => {
-    dispatch({ type: "REMOVE_FROM_CART", payload: productId });
+    removeFromCart(productId);
   };
 
   const handleQuantityChange = (productId, newQuantity) => {
     if (newQuantity > 0) {
-      dispatch({ 
-        type: "UPDATE_QUANTITY", 
-        payload: { _id: productId, quantity: newQuantity } 
-      });
+      updateQuantity(productId, newQuantity);
     }
   };
 
   const calculateTotal = () => {
-    return cart.reduce(
-      (total, item) => total + item.price * item.quantity,
+      return cart.reduce(
+        (total, item) => {
+          const price = parseFloat(item.product?.price) || 0;
+          const quantity = parseInt(item.quantity) || 0;
+          return total + (price * quantity);
+        },
       0
     ).toFixed(2);
   };
@@ -37,14 +38,22 @@ const CartPage = () => {
           <div className="cart-items">
             {cart.map((item) => (
               <div key={item._id} className="cart-item">
-                <img 
-                  src={`http://localhost:5000${item.imageUrl}`} 
-                  alt={item.name} 
-                  className="cart-item-image"
-                />
+                {item.product?.imageUrl ? (
+                  <img 
+                    src={`http://localhost:5000${item.product.imageUrl.startsWith('/') ? '' : '/'}${item.product.imageUrl}`} 
+                    alt={item.product?.name || 'Product'} 
+                    className="cart-item-image"
+                    onError={(e) => {
+                      e.target.onerror = null; 
+                      e.target.src = '/placeholder-image.jpg'
+                    }}
+                  />
+                ) : (
+                  <div className="image-placeholder">No Image</div>
+                )}
                 <div className="cart-item-details">
-                  <h3>{item.name}</h3>
-                  <p>Price: ₹{item.price}</p>
+                  <h3>{item.product?.name || 'Unknown Product'}</h3>
+                  <p>Price: ₹{item.product?.price || '0.00'}</p>
                   <div className="quantity-control">
                     <button 
                       onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
@@ -70,11 +79,20 @@ const CartPage = () => {
           </div>
           <div className="cart-summary">
             <h3>Total: ₹{calculateTotal()}</h3>
+            
             <button 
               className="checkout-button"
-              onClick={() => dispatch({ type: "CHECKOUT" })}
+              onClick={async () => {
+                try {
+                  await checkout();
+                  alert('Checkout successful! Your order has been placed.');
+                } catch (error) {
+                  console.error('Checkout failed:', error);
+                }
+              }}
+              disabled={loading}
             >
-              Proceed to Checkout
+              {loading ? 'Processing...' : 'Proceed to Checkout'}
             </button>
           </div>
         </>

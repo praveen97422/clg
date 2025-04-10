@@ -9,32 +9,66 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     // Initialize from localStorage if available
     const savedUser = localStorage.getItem(USER_KEY);
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      return {
+        ...userData,
+        isAdmin: userData.email === 'havyajewellery@gmail.com'
+      };
+    }
+    return null;
   });
   const [isAuthenticated, setIsAuthenticated] = useState(!!user);
+  const [isAdmin, setIsAdmin] = useState(user?.isAdmin || false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const userData = {
-          name: firebaseUser.displayName,
-          email: firebaseUser.email,
-          picture: firebaseUser.photoURL
-        };
-        localStorage.setItem(USER_KEY, JSON.stringify(userData));
-        setUser(userData);
-        setIsAuthenticated(true);
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          const userData = {
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            picture: firebaseUser.photoURL,
+            isAdmin: firebaseUser.email === 'havyajewellery@gmail.com',
+            token: idToken
+          };
+          localStorage.setItem(USER_KEY, JSON.stringify(userData));
+          setUser(userData);
+          setIsAuthenticated(true);
+          setIsAdmin(userData.isAdmin);
+        } catch (error) {
+          console.error('Auth state error:', error);
+        }
       }
       setLoading(false);
     });
     return unsubscribe;
   }, []);
 
-  const login = (userData) => {
-    localStorage.setItem(USER_KEY, JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
+  const login = async (userData) => {
+    try {
+      // Get Firebase ID token
+      const idToken = await auth.currentUser.getIdToken();
+      
+      // Verify admin status (you may want to move this to a backend API)
+      const isAdmin = userData.email === 'havyajewellery@gmail.com';
+      
+      const userWithAuthData = {
+        ...userData,
+        isAdmin,
+        token: idToken
+      };
+      
+      localStorage.setItem(USER_KEY, JSON.stringify(userWithAuthData));
+      setUser(userWithAuthData);
+      setIsAuthenticated(true);
+      setIsAdmin(isAdmin);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const logout = async () => {
@@ -52,6 +86,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{ 
       user, 
       isAuthenticated, 
+      isAdmin,
       loading,
       login, 
       logout 

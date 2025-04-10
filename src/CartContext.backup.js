@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { auth } from "./firebase";
 
 const CartContext = createContext();
 
@@ -14,19 +13,9 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const token = await getAuthToken();
       const response = await axios.get("http://localhost:5000/cart", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      const formattedCart = response.data.cart.map((item) => {
-        const productDetails = item.productId?._doc || item.productId || {};
-        return {
-          ...item,
-          product: productDetails,
-          quantity: item.quantity,
-        };
-      });
-
-      setCart(formattedCart);
+      setCart(response.data.cart);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch cart");
     } finally {
@@ -43,7 +32,7 @@ export const CartProvider = ({ children }) => {
         { productId, quantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      await fetchCart();
+      setCart(response.data.cart);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add to cart");
     } finally {
@@ -55,23 +44,14 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await getAuthToken();
-      const cartItem = cart.find((item) => item._id === productId);
-      if (!cartItem) {
-        throw new Error("Cart item not found");
-      }
-
-      await axios.put(
-        `http://localhost:5000/cart/${cartItem.product._id}`,
+      const response = await axios.put(
+        `http://localhost:5000/cart/${productId}`,
         { quantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      await fetchCart();
+      setCart(response.data.cart);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          `Failed to update quantity: ${err.message}`
-      );
+      setError(err.response?.data?.message || "Failed to update quantity");
     } finally {
       setLoading(false);
     }
@@ -81,17 +61,11 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await getAuthToken();
-      const cartItem = cart.find((item) => item._id === productId);
-      if (!cartItem) {
-        throw new Error("Cart item not found");
-      }
-
-      await axios.delete(
-        `http://localhost:5000/cart/${cartItem.product._id}`,
+      const response = await axios.delete(
+        `http://localhost:5000/cart/${productId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      await fetchCart();
+      setCart(response.data.cart);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to remove from cart");
     } finally {
@@ -103,9 +77,10 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = await getAuthToken();
-      await axios.delete("http://localhost:5000/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.delete(
+        "http://localhost:5000/cart",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setCart([]);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to clear cart");
@@ -114,35 +89,11 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const checkout = async () => {
-    try {
-      setLoading(true);
-      const token = await getAuthToken();
-      const response = await axios.post(
-        "http://localhost:5000/checkout",
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCart([]);
-      return response.data;
-    } catch (err) {
-      setError(err.response?.data?.message || "Checkout failed");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getAuthToken = async () => {
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-      return await user.getIdToken();
-    } catch (error) {
-      throw error;
-    }
+    // Get Firebase auth token
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+    return await user.getIdToken();
   };
 
   useEffect(() => {
@@ -159,8 +110,7 @@ export const CartProvider = ({ children }) => {
         updateQuantity,
         removeFromCart,
         clearCart,
-        fetchCart,
-        checkout,
+        fetchCart
       }}
     >
       {children}
@@ -175,3 +125,63 @@ export const useCart = () => {
   }
   return context;
 };
+            {
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+          if (!response.data?.success) {
+            throw new Error(`Failed to update stock for ${item._id}`);
+          }
+        }));
+        return []; // Clear cart on successful checkout
+      } catch (error) {
+        console.error("Checkout failed:", error);
+        // Return current state if checkout fails
+        return state;
+      }
+
+    default:
+      return state;
+  }
+};
+
+export const CartProvider = ({ children }) => {
+  // Load initial state from localStorage
+  const getInitialCart = () => {
+    try {
+      const savedCart = localStorage.getItem('cart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error('Failed to load cart from localStorage:', error);
+      return [];
+    }
+  };
+
+  const [cart, _dispatch] = useReducer((state, action) => {
+    if (action.type === 'UPDATE_STATE') {
+      // Save to localStorage whenever state changes
+      try {
+        localStorage.setItem('cart', JSON.stringify(action.payload));
+      } catch (error) {
+        console.error('Failed to save cart to localStorage:', error);
+      }
+      return action.payload;
+    }
+    return state;
+  }, getInitialCart());
+
+  const dispatch = async (action) => {
+    const newState = await cartReducer(cart, action);
+    _dispatch({ type: 'UPDATE_STATE', payload: newState });
+  };
+
+  return (
+    <CartContext.Provider value={{ cart, dispatch }}>
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+export const useCart = () => useContext(CartContext);

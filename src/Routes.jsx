@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { CartProvider } from "./CartContext.jsx";
+import { WishlistProvider } from "./WishlistContext.jsx";
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import Navbar from "./Navbar.jsx";
 import AdminNavbar from "./AdminNavbar.jsx";
@@ -12,6 +13,7 @@ import ProductDetails from "./ProductDetails.jsx";
 import ProductManager from "./ProductManagement.jsx";
 import Home from "./Home.jsx";
 import CartPage from "./CartPage.jsx";
+import WishlistPage from "./WishlistPage.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import AdminProtectedRoute from "./auth/AdminProtectedRoute.jsx";
 import NewArrivals from "./NewArrivals.jsx";
@@ -35,25 +37,28 @@ export default function AppRoutes() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
-          <NavbarWrapper />
-          <Routes>
-            <Route path="/" element={<><ImageSlider /><JewelryCards /><Home /></>} />
-            <Route 
-              path="/admin" 
-              element={
-                <AdminProtectedRoute>
-                  <ProductManager />
-                </AdminProtectedRoute>
-              } 
-            />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/newarrivals" element={<NewArrivals />} />
-            <Route path="/shopby" element={<ShopBy />} />
-          </Routes>
-          {/* <Footer /> */}
-        </Router>
+        <WishlistProvider>
+          <Router>
+            <NavbarWrapper />
+            <Routes>
+              <Route path="/" element={<><ImageSlider /><JewelryCards /><Home /></>} />
+              <Route 
+                path="/admin" 
+                element={
+                  <AdminProtectedRoute>
+                    <ProductManager />
+                  </AdminProtectedRoute>
+                } 
+              />
+              <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
+              <Route path="/newarrivals" element={<NewArrivals />} />
+              <Route path="/shopby" element={<ShopBy />} />
+            </Routes>
+            {/* <Footer /> */}
+          </Router>
+        </WishlistProvider>
       </CartProvider>
     </AuthProvider>
   );

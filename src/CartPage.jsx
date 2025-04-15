@@ -1,7 +1,6 @@
 import React from "react";
 import { useCart } from "./CartContext.jsx";
 import { Link } from "react-router-dom";
-// import "./styles/ProductDetails.css";
 import "./styles/CartPage.css";
 
 const CartPage = () => {
@@ -39,20 +38,26 @@ const CartPage = () => {
             {cart.map((item) => (
               <div key={item._id} className="cart-item">
                 {item.product?.imageUrl ? (
-                  <img 
-                    src={`http://localhost:5000${item.product.imageUrl.startsWith('/') ? '' : '/'}${item.product.imageUrl}`} 
-                    alt={item.product?.name || 'Product'} 
-                    className="cart-item-image"
-                    onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src = '/placeholder-image.jpg'
-                    }}
-                  />
+                  <Link to={`/product/${item.product._id}`} state={{ product: item.product }}>
+                    <img 
+                      src={`http://localhost:5000${item.product.imageUrl.startsWith('/') ? '' : '/'}${item.product.imageUrl}`} 
+                      alt={item.product?.name || 'Product'} 
+                      className="cart-item-image"
+                      onError={(e) => {
+                        e.target.onerror = null; 
+                        e.target.src = '/placeholder-image.jpg'
+                      }}
+                    />
+                  </Link>
                 ) : (
-                  <div className="image-placeholder">No Image</div>
+                  <Link to={`/product/${item.product._id}`} state={{ product: item.product }} className="image-placeholder">
+                    No Image
+                  </Link>
                 )}
                 <div className="cart-item-details">
-                  <h3>{item.product?.name || 'Unknown Product'}</h3>
+                  <Link to={`/product/${item.product._id}`} state={{ product: item.product }}>
+                    <h3>{item.product?.name || 'Unknown Product'}</h3>
+                  </Link>
                   <p>Price: ₹{item.product?.price || '0.00'}</p>
                   <div className="quantity-control">
                     <button 

@@ -1,3 +1,29 @@
+.cart-count,
+.wishlist-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.wishlist-icon {
+  position: relative;
+  margin-right: 15px;
+  color: #333;
+  font-size: 20px;
+}
+
+.wishlist-icon:hover {
+  color: #e74c3c;
+}
 /* Navbar.css */
 
 /* Top Banner */

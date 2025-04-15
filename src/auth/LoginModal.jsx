@@ -1,5 +1,6 @@
 import { useAuth } from './AuthContext';
 import { signInWithGoogle } from '../firebase';
+import { BsGoogle } from 'react-icons/bs';
 
 export default function LoginModal({ onClose }) {
   const { login } = useAuth();
@@ -23,7 +24,10 @@ export default function LoginModal({ onClose }) {
       <div className="modal-content">
         <h2>Login with Google</h2>
         <button onClick={handleGoogleLogin} className="google-login-btn">
-          Sign in with Google
+          
+            <BsGoogle/>
+        
+          Continue with Google
         </button>
         <button onClick={onClose} className="modal-close-btn">
           Close

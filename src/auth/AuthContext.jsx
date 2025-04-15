@@ -30,6 +30,7 @@ export function AuthProvider({ children }) {
           const userData = {
             name: firebaseUser.displayName,
             email: firebaseUser.email,
+            uid: firebaseUser.uid,
             picture: firebaseUser.photoURL,
             isAdmin: firebaseUser.email === 'havyajewellery@gmail.com',
             token: idToken
@@ -57,11 +58,13 @@ export function AuthProvider({ children }) {
       
       const userWithAuthData = {
         ...userData,
+        uid: auth.currentUser.uid,
         isAdmin,
         token: idToken
       };
       
-      localStorage.setItem(USER_KEY, JSON.stringify(userWithAuthData));
+localStorage.setItem(USER_KEY, JSON.stringify(userWithAuthData));
+window.location.reload();
       setUser(userWithAuthData);
       setIsAuthenticated(true);
       setIsAdmin(isAdmin);
@@ -77,6 +80,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(USER_KEY);
       setUser(null);
       setIsAuthenticated(false);
+      window.location.reload();
     } catch (error) {
       console.error('Logout error:', error);
     }

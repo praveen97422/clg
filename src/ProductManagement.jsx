@@ -19,7 +19,14 @@ export default function ProductManagement() {
 
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem("token");
+  const authData = JSON.parse(localStorage.getItem("auth_user"));
+  const token = authData?.token;
+  const isAdmin = authData?.isAdmin;
+
+  if (!isAdmin) {
+    alert("Admin privileges required for product management");
+    return;
+  }
 
   // Fetch Products
   useEffect(() => {
@@ -96,7 +103,7 @@ const fetchProducts = async () => {
     try {
       const config = {
         headers: {
-          "x-auth-token": token,
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
         },
         onUploadProgress: progressEvent => {
@@ -148,7 +155,7 @@ const fetchProducts = async () => {
 
     try {
       await axios.delete(`http://localhost:5000/delete/${id}`, {
-        headers: { "x-auth-token": token },
+        headers: { "Authorization": `Bearer ${token}` },
       });
 
       setProducts(products.filter((product) => product._id !== id));

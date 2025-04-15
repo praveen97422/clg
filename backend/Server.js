@@ -103,6 +103,9 @@ const UserSchema = new mongoose.Schema({
   cart: [{
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     quantity: { type: Number, default: 1 }
+  }],
+  wishlist: [{
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
   }]
 });
 const User = mongoose.model("User", UserSchema);
@@ -123,6 +126,83 @@ const authenticate = async (req, res, next) => {
 };
 
 const Product = mongoose.model("Product", ProductSchema);
+
+// Review Schema
+const ReviewSchema = new mongoose.Schema({
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  userId: { type: String, required: true },
+  userName: { type: String, required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  reviewText: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+}); 
+const Review = mongoose.model("Review", ReviewSchema);
+
+app.delete("/products/:productId/reviews/:reviewId", authenticate, async (req, res) => {
+  try {
+    const { productId, reviewId } = req.params;
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    const userEmail = decodedToken.email;
+
+    // Find the review to delete
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ success: false, message: "Review not found" });
+    }
+
+    // Check if the review belongs to the user or if user is admin
+    if (review.userId !== userId && userEmail !== 'havyajewellery@gmail.com') {
+      return res.status(403).json({ success: false, message: "Unauthorized to delete this review" });
+    }
+
+    // Delete the review
+    await Review.findByIdAndDelete(reviewId);
+
+    res.status(200).json({ success: true, message: "Review deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to delete review", error });
+  }
+});
+
+// Review Endpoints
+app.post("/products/:id/reviews", authenticate, async (req, res) => {
+  try {
+    const { rating, reviewText } = req.body;
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    
+    const newReview = new Review({
+      productId: req.params.id,
+      userId: decodedToken.uid,
+      userName: decodedToken.name || decodedToken.email.split('@')[0],
+      rating,
+      reviewText
+    });
+
+    await newReview.save();
+    res.status(201).json({ success: true, review: newReview });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to create review", error });
+  }
+});
+
+app.get("/products/:id/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find({ productId: req.params.id })
+      .sort({ createdAt: -1 })
+      .limit(50);
+    res.json({ success: true, reviews });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to fetch reviews", error });
+  }
+});
 
 // Cart Endpoints
 app.get("/cart", authenticate, async (req, res) => {
@@ -198,6 +278,66 @@ app.delete("/cart", authenticate, async (req, res) => {
     user.cart = [];
     await user.save();
     res.json({ success: true, message: "Cart cleared" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+// Wishlist Endpoints
+app.get("/wishlist", authenticate, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email }).populate('wishlist.productId');
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    res.json({ success: true, wishlist: user.wishlist });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.post("/wishlist", authenticate, async (req, res) => {
+  try {
+    const { productId } = req.body;
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    let user = await User.findOne({ email: req.user.email });
+    if (!user) {
+      user = new User({ email: req.user.email, cart: [], wishlist: [] });
+    }
+
+    const existingItem = user.wishlist.find(item => item.productId.toString() === productId);
+    if (!existingItem) {
+      user.wishlist.push({ productId });
+      await user.save();
+    }
+
+    res.status(201).json({ success: true, wishlist: user.wishlist });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.delete("/wishlist/:productId", authenticate, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    user.wishlist = user.wishlist.filter(item => item.productId.toString() !== req.params.productId);
+    await user.save();
+    res.json({ success: true, wishlist: user.wishlist });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
+app.delete("/wishlist", authenticate, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    user.wishlist = [];
+    await user.save();
+    res.json({ success: true, message: "Wishlist cleared" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error", error });
   }
@@ -405,9 +545,6 @@ app.delete("/delete/:id", verifyAdmin, async (req, res) => {
   }
 });
 
-app.get('/test-stock-endpoint', (req, res) => {
-  res.json({ message: 'Test endpoint working', status: 200 });
-});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server is running on http://0.0.0.0:${PORT}`);

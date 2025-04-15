@@ -1,7 +1,7 @@
 import { FaSearch, FaHeart, FaShoppingBag, FaUser } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import "./styles/Navbar.css";
 import { useCart } from "./CartContext.jsx";
+import { useWishlist } from "./WishlistContext.jsx";
 import { useState, useEffect } from "react";
 import { useAuth } from "./auth/AuthContext.jsx";
 import LoginModal from "./auth/LoginModal.jsx";
@@ -9,6 +9,7 @@ import axios from "axios";
 
 export default function Navbar() {
   const { cart } = useCart();
+  const { wishlist } = useWishlist();
   const { user, isAuthenticated, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -112,7 +113,10 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          <FaHeart />
+          <Link to="/wishlist" className="wishlist-icon">
+            <FaHeart />
+            {wishlist.length > 0 && <span className="wishlist-count">{wishlist.length}</span>}
+          </Link>
           <Link to="/cart" className="cart-icon">
             <FaShoppingBag />
             {cart.length > 0 && <span className="cart-count">{cart.length}</span>}

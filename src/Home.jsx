@@ -3,7 +3,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import "./styles/Home.css";
 
+
 const Home = () => {
+    
   const [products, setProducts] = useState([]);
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -29,7 +31,7 @@ const Home = () => {
     return acc;
   }, {});
 
-  const handleDoubleClick = (product) => {
+  const handleClick = (product) => {
     navigate(`/product/${product._id}`, { state: { product } }); // Navigate to product details page
   };
 
@@ -44,7 +46,7 @@ const Home = () => {
             <h3 className="section-title">{category}</h3>
             <div className="product-grid">
               {categorizedProducts[category].map((product) => (
-                <div key={product._id} className="product-card" onDoubleClick={() => handleDoubleClick(product)}>
+                <div key={product._id} className="product-card" onClick={() => handleClick(product)}>
                   <img className="product-image" src={`http://localhost:5000${product.imageUrl}`} alt={product.name} />
                   <div className="product-details">
                     <p className="product-name">{product.name}</p>

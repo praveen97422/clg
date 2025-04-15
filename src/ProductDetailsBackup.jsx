@@ -62,9 +62,8 @@ const ProductDetails = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Refetch reviews after deletion
-      const response = await axios.get(`http://localhost:5000/products/${product._id}/reviews`);
-      setReviews(response.data.reviews);
+      // Update the local state to remove the deleted review
+      setReviews(reviews.filter(review => review._id !== reviewId));
     } catch (error) {
       console.error("Failed to delete review:", error);
       alert("Failed to delete review. Please try again.");
@@ -219,7 +218,7 @@ const ProductDetails = () => {
                   <div className="review-date">
                     {new Date(review.createdAt).toLocaleDateString()}
                   </div>
-                  {isAuthenticated && (user.uid === review.userId || user.isAdmin) && (
+                  {isAuthenticated && (user._id === review.userId || user.isAdmin) && (
                     <button onClick={() => deleteReview(review._id)}>Delete</button>
                   )}
                 </div>

@@ -13,22 +13,44 @@ export default function ProductManagement() {
     discount: "",
     category: "Rings", // Default category
     stock: "",
-    timestamp: "" // Added timestamp field
+    timestamp: "", // Added timestamp field
+    description: "" // Added description field
   });
 
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem("token");
+  const authData = JSON.parse(localStorage.getItem("auth_user"));
+  const token = authData?.token;
+  const isAdmin = authData?.isAdmin;
+
+  if (!isAdmin) {
+    alert("Admin privileges required for product management");
+    return;
+  }
 
   // Fetch Products
   useEffect(() => {
     fetchProducts(); // Ensure the updated product list is fetched
   }, []);
 
-  const fetchProducts = async () => {
+const fetchProducts = async () => {
     try {
       const res = await axios.get("http://localhost:5000/products");
-      setProducts(res.data.products);
+      // Ensure all products have all required fields
+      const completeProducts = res.data.products.map(product => ({
+        _id: product._id,
+        name: product.name || '',
+        price: product.price || 0,
+        mrp: product.mrp || 0,
+        discount: product.discount || 0,
+        category: product.category || 'Rings',
+        stock: product.stock || 0,
+        description: product.description || '',
+        imageUrl: product.imageUrl || '',
+        timestamp: product.timestamp || new Date().toISOString(),
+        createdAt: product.createdAt || new Date().toISOString()
+      }));
+      setProducts(completeProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -46,41 +68,78 @@ export default function ProductManagement() {
   };
 
   const addOrUpdateProduct = async () => {
-    console.log("Form Data before submission:", newProduct); // Log the form data before submission
-    console.log("Editing Product ID:", editingProduct ? editingProduct._id : "No product being edited"); // Log the ID of the product being edited
+  
 
 
-    if (!newProduct.image || !newProduct.name || !newProduct.price || !newProduct.mrp || !newProduct.discount || !newProduct.category || !newProduct.stock) {
+    if ( !newProduct.name || !newProduct.price || !newProduct.mrp || !newProduct.discount || !newProduct.category || !newProduct.stock) {
       alert("Please enter all fields and select an image.");
       return;
     }
 
     setLoading(true);
     const formData = new FormData();
-    formData.append("timestamp", new Date().toISOString()); // Include timestamp in the form data
-
-    formData.append("timestamp", new Date().toISOString()); // Add current timestamp
-
-
-    formData.append("image", newProduct.image);
-    formData.append("name", newProduct.name);
-    formData.append("price", newProduct.price);
-    formData.append("mrp", newProduct.mrp);
-    formData.append("discount", newProduct.discount);
-    formData.append("category", newProduct.category);
-    formData.append("stock", newProduct.stock);
+    formData.append("timestamp", new Date().toISOString());
+    
+    // Only append image if a new one was selected
+    if (newProduct.image) {
+      formData.append("image", newProduct.image);
+    }
+    
+    // Append all other fields as JSON string
+    const productData = {
+      name: newProduct.name,
+      price: newProduct.price,
+      mrp: newProduct.mrp,
+      discount: newProduct.discount,
+      category: newProduct.category,
+      stock: newProduct.stock,
+      description: newProduct.description
+    };
+    // Send data directly in body like stock endpoint
+    for (const key in productData) {
+      formData.append(key, productData[key]);
+    }
 
     try {
+      const config = {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        },
+        onUploadProgress: progressEvent => {
+          console.log(`Upload Progress: ${Math.round((progressEvent.loaded * 100) / progressEvent.total)}%`);
+        }
+      };
+
       const response = editingProduct ? 
-        await axios.put(`http://localhost:5000/edit/${editingProduct._id}`, formData, { headers: { "x-auth-token": token } }) :
-        await axios.post("http://localhost:5000/upload", formData, { headers: { "x-auth-token": token } });
+        await axios.put(`http://localhost:5000/edit/${editingProduct._id}`, formData, config) :
+        await axios.post("http://localhost:5000/upload", formData, config);
 
+      // Response logging removed
       
-      console.log("Response after update:", response.data); // Log the response from the server
-      console.log("Updated Product:", response.data.product); // Log the updated product data
+      // Ensure we have all product fields
+      const updatedProduct = {
+        ...response.data.product,
+        name: response.data.product.name || newProduct.name,
+        price: response.data.product.price || newProduct.price,
+        mrp: response.data.product.mrp || newProduct.mrp,
+        discount: response.data.product.discount || newProduct.discount,
+        category: response.data.product.category || newProduct.category,
+        stock: response.data.product.stock || newProduct.stock,
+        description: response.data.product.description || newProduct.description
+      };
+      
+      // Product update logging removed
 
-      fetchProducts(); // Refresh the product list
-    setNewProduct({ image: null, name: "", price: "", mrp: "", discount: "", category: "Rings", stock: "" }); 
+      // Update the products list with the complete product data
+      if (editingProduct) {
+        setProducts(products.map(p => 
+          p._id === updatedProduct._id ? updatedProduct : p
+        ));
+      } else {
+        setProducts([...products, updatedProduct]);
+      }
+      setNewProduct({ image: null, name: "", price: "", mrp: "", discount: "", category: "", description: "", stock: "" }); 
 
       setEditingProduct(null);
     } catch (error) {
@@ -96,7 +155,7 @@ export default function ProductManagement() {
 
     try {
       await axios.delete(`http://localhost:5000/delete/${id}`, {
-        headers: { "x-auth-token": token },
+        headers: { "Authorization": `Bearer ${token}` },
       });
 
       setProducts(products.filter((product) => product._id !== id));
@@ -108,15 +167,18 @@ export default function ProductManagement() {
 
   const editProduct = (product) => {
     setNewProduct({
-      image: null,
-      name: product.name || "", // Ensure default value
-      price: product.price || "", // Ensure default value
-      mrp: product.mrp || "", // Ensure default value
-      discount: product.discount || "", // Ensure default value
-      category: product.category || "Rings", // Ensure default value
-      stock: product.stock || "" // Ensure default value
+      image: null, // Keep as null but we'll handle existing image differently
+      name: product.name || "",
+      price: product.price || "",
+      mrp: product.mrp || "",
+      discount: product.discount || "",
+      category: product.category || "Rings",
+      stock: product.stock || "",
+      description: product.description || "",
+      existingImageUrl: product.imageUrl // Store existing image URL
     });
     setEditingProduct(product);
+    // Editing product debug log removed
   };
 
   return (
@@ -127,17 +189,72 @@ export default function ProductManagement() {
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <input type="file" onChange={handleFileUpload} />
         <input type="text" name="name" placeholder="Product Name" value={newProduct.name} onChange={handleInputChange} />
-        <input type="text" name="price" placeholder="Enter Price" value={newProduct.price} onChange={handleInputChange} />
-        <input type="text" name="mrp" placeholder="MRP" value={newProduct.mrp} onChange={handleInputChange} />
+        <input type="number" name="price" placeholder="Enter Price" value={newProduct.price} onChange={handleInputChange} />
+        <input type="number" name="mrp" placeholder="MRP" value={newProduct.mrp} onChange={handleInputChange} />
         <input type="text" name="discount" placeholder="Discount %" value={newProduct.discount} onChange={handleInputChange} />
-        <select name="category" value={newProduct.category} onChange={handleInputChange}>
-          <option value="Rings">Rings</option>
-          <option value="Earrings">Earrings</option>
-          <option value="Chains">Chains</option>
-          <option value="Necklace">Necklace</option>
-        </select>
+        <div>
+  <label>Category:</label>
+  <div>
+    <label>
+      <input
+        type="radio"
+        name="category"
+        value="Rings"
+        checked={newProduct.category === "Rings"}
+        onChange={handleInputChange}
+      />
+      Rings
+    </label>
 
-        <input type="text" name="stock" placeholder="Stock Quantity" value={newProduct.stock} onChange={handleInputChange} />
+    <label>
+      <input
+        type="radio"
+        name="category"
+        value="Earrings"
+        checked={newProduct.category === "Earrings"}
+        onChange={handleInputChange}
+      />
+      Earrings
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="category"
+        value="Chains"
+        checked={newProduct.category === "Chains"}
+        onChange={handleInputChange}
+      />
+      Chains
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="category"
+        value="Necklace"
+        checked={newProduct.category === "Necklace"}
+        onChange={handleInputChange}
+      />
+      Necklace
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="category"
+        value="others"
+        checked={newProduct.category === "others"}
+        onChange={handleInputChange}
+      />
+      Others
+    </label>
+  </div>
+</div>
+
+
+        <input type="text" name="description" placeholder="Product Description" value={newProduct.description} onChange={handleInputChange} /> {/* Changed to textarea */}
+        <input type="number" name="stock" placeholder="Stock Quantity" value={newProduct.stock} onChange={handleInputChange} />
         <button onClick={addOrUpdateProduct} disabled={loading}>{loading ? "Processing..." : editingProduct ? "Update Product" : "Add Product"}</button>
       </div>
 
@@ -156,10 +273,10 @@ export default function ProductManagement() {
               <p>Category: {product.category}</p>
               <p>Stock: {product.stock}</p>
               <p>Uploaded At: {product.timestamp ? new Date(product.timestamp).toLocaleString() : "N/A"}</p> {/* Display timestamp */}
+              <p>Description: {product.description}</p> {/* Display product description */}
 
 
               <button onClick={() => editProduct(product)}>Edit</button>
-              {/* <p>Uploaded At: {new Date(product.timestamp).toLocaleString()}</p> Display timestamp */}
               <button onClick={() => deleteProduct(product._id)}>Delete</button>
             </div>
           ))

@@ -1,5 +1,5 @@
 import React from "react";
-import "./styles/JewelryCards.css";
+import "./styles/SectionSelection.css";
 import img1 from "./assets/img1.jpg"; // Replace with actual images
 import img2 from "./assets/img5.jpg";
 import img3 from "./assets/img3.jpg";

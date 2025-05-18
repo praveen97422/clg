@@ -1,0 +1,201 @@
+:root {
+  /* Colors */
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --accent-color: #e74c3c;
+  --text-primary: #2c3e50;
+  --text-secondary: #4a5568;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Gradients */
+  --hero-gradient: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  --cta-gradient: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  
+  /* Spacing */
+  --spacing-xs: 10px;
+  --spacing-sm: 20px;
+  --spacing-md: 30px;
+  --spacing-lg: 40px;
+  --spacing-xl: 60px;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  
+  /* Transitions */
+  --transition: 0.3s ease;
+}
+
+/* Base Styles */
+.about-page-wrapper {
+  background-color: var(--bg-secondary);
+  min-height: 100vh;
+  padding-bottom: var(--spacing-xl);
+  margin-top: 10px;
+}
+
+/* Hero Section */
+.about-hero-banner {
+  background: var(--hero-gradient);
+  padding: var(--spacing-xl) var(--spacing-sm);
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+  /* border-radius:  var(--radius-lg) var(--radius-lg); */
+  box-shadow: var(--shadow-lg);
+}
+
+.about-main-title {
+  font-size: 2.5rem;
+  color: var(--bg-primary);
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+/* Content Layout */
+.about-content-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-sm);
+}
+
+/* Card Styles */
+.about-content-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.about-content-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Typography */
+.about-card-title {
+  color: var(--text-primary);
+  font-size: 1.8rem;
+  margin-bottom: var(--spacing-sm);
+  position: relative;
+  padding-bottom: var(--spacing-xs);
+  font-weight: 600;
+}
+
+.about-card-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background-color: var(--accent-color);
+}
+
+.about-card-text {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--spacing-sm);
+  font-size: 1.1rem;
+}
+
+/* Values Grid */
+.about-values-grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.about-value-item {
+  background: var(--bg-secondary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-weight: 500;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.about-value-item:hover {
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-md);
+}
+
+/* Delivery Box */
+.about-delivery-box {
+  background: var(--bg-secondary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-sm);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.about-delivery-text {
+  margin: var(--spacing-xs) 0;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* CTA Section */
+.about-cta-wrapper {
+  text-align: center;
+  margin-top: var(--spacing-lg);
+}
+
+.about-cta-button {
+  display: inline-block;
+  padding: 15px 30px;
+  background: var(--cta-gradient);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.about-cta-button:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .about-hero-banner {
+    padding: var(--spacing-lg) var(--spacing-sm);
+  }
+  
+  .about-main-title {
+    font-size: 2rem;
+  }
+  
+  .about-content-card {
+    padding: var(--spacing-md);
+  }
+  
+  .about-card-title {
+    font-size: 1.5rem;
+  }
+  
+  .about-values-grid {
+    grid-template-columns: 1fr;
+  }
+}

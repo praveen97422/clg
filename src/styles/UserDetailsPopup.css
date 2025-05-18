@@ -1,0 +1,209 @@
+.user-details-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 79%;
+  height: 100%;
+  /* background-color: rgba(0, 0, 0, 0.5); */
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* backdrop-filter: blur(5px); */
+}
+
+.user-details-forms {
+  max-width: 700px;
+  margin: 150px;
+  width: 100%;
+  padding: 20px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.user-details-forms .user-profile-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.user-details-forms .user-profile-picture {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #007bff;
+  margin-bottom: 10px;
+}
+
+.user-details-forms .user-profile-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.user-details-forms h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.user-details-forms form div {
+  margin-bottom: 15px;
+}
+
+.user-details-forms label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #555;
+}
+
+.user-details-forms input[type="date"],
+.user-details-forms input[type="tel"],
+.user-details-forms textarea,
+.user-details-forms input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.user-details-forms textarea {
+  min-height: 60px;
+}
+
+.user-details-forms button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.user-details-forms button[type="submit"] {
+  background-color: #007bff;
+  color: white;
+}
+
+.user-details-forms button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.user-details-forms button[type="button"] {
+  background-color: #ccc;
+  color: #333;
+}
+
+.user-details-forms button[type="button"]:hover {
+  background-color: #999;
+}
+@media (max-width: 768px) {
+  .user-details-forms {
+    max-width: 600px;
+    box-sizing: unset;
+    margin: 20px;
+    /* margin: 0 auto; */
+    padding: 20px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  
+  .user-details-forms .user-profile-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .user-details-forms .user-profile-picture {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #007bff;
+    margin-bottom: 10px;
+  }
+  
+  .user-details-forms .user-profile-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #007bff;
+  }
+  
+  .user-details-forms h3 {
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+  
+  .user-details-forms form div {
+    margin-bottom: 15px;
+  }
+  
+  .user-details-forms label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #555;
+  }
+  
+  .user-details-forms input[type="date"],
+  .user-details-forms input[type="tel"],
+  .user-details-forms textarea,
+  .user-details-forms input[type="text"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  
+  .user-details-forms textarea {
+    min-height: 60px;
+  }
+  
+  .user-details-forms button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-details-forms button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .user-details-forms button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  
+  .user-details-forms button[type="button"] {
+    background-color: #ccc;
+    color: #333;
+  }
+  
+  .user-details-forms button[type="button"]:hover {
+    background-color: #999;
+  }
+  
+
+
+  
+  }

@@ -1,0 +1,266 @@
+.td-section {
+  background: #fff;
+  margin: 40px 0;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.td-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.td-title-container {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.td-section-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.td-countdown {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.td-countdown span {
+  font-size: 16px;
+  color: #666;
+}
+
+.td-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.td-time-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 8px;
+  min-width: 60px;
+}
+
+.td-time {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ff3c3c;
+}
+
+.td-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.td-separator {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff3c3c;
+  margin-top: -10px;
+}
+
+.td-view-all-link {
+  font-size: 16px;
+  color: #0078d7;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 2px solid #0078d7;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.td-view-all-link:hover {
+  background: #0078d7;
+  color: white;
+}
+
+.td-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.td-product-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.td-product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.td-image-wrapper {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+
+.td-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.td-product-card:hover .td-product-image {
+  transform: scale(1.05);
+}
+
+.td-discount-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ff3c3c;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  z-index: 2;
+}
+
+.td-stock-indicator {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.td-product-info {
+  padding: 16px;
+}
+
+.td-product-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+  height: 44px;
+  overflow: hidden;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.td-price-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.td-original-price {
+  font-size: 14px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.td-deal-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ff3c3c;
+}
+
+.td-savings {
+  font-size: 14px;
+  color: #28a745;
+  font-weight: 500;
+}
+
+.td-no-deals {
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+  padding: 40px 0;
+}
+
+@media (max-width: 1024px) {
+  .td-title-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .td-product-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .td-section {
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .td-header {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .td-section-title {
+    font-size: 24px;
+  }
+
+  .td-time-block {
+    min-width: 50px;
+    padding: 6px 8px;
+  }
+
+  .td-time {
+    font-size: 18px;
+  }
+
+  .td-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .td-product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .td-timer {
+    gap: 4px;
+  }
+
+  .td-time-block {
+    min-width: 40px;
+    padding: 4px 6px;
+  }
+
+  .td-time {
+    font-size: 16px;
+  }
+
+  .td-separator {
+    font-size: 20px;
+  }
+}

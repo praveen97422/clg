@@ -1,0 +1,38 @@
+Comprehensive Review Plan for backend/Server.js
+
+1. Security:
+- Ensure all authentication and authorization checks are robust.
+- Validate inputs thoroughly to prevent injection or malformed data.
+- Secure handling of sensitive data like Firebase private keys.
+- Proper error messages without leaking sensitive info.
+
+2. Error Handling:
+- Consistent error responses with proper HTTP status codes.
+- Catch and log errors in async functions.
+- Handle edge cases like missing data or invalid formats.
+
+3. Performance:
+- Optimize database queries and avoid unnecessary calls.
+- Efficient handling of file uploads and deletions.
+- Use lean queries where possible to reduce overhead.
+
+4. Code Quality and Best Practices:
+- Use consistent code style and formatting.
+- Remove commented-out or redundant code.
+- Modularize code if possible for better maintainability.
+- Use environment variables securely and validate their presence.
+- Improve readability and maintainability of middleware and route handlers.
+
+5. Specific Issues Noted:
+- Repeated token verification in some routes; consider middleware reuse.
+- Potential race conditions in stock updates.
+- Image deletion path handling may need validation.
+- Self-ping interval comment mismatch (1 min vs 5 min).
+- Use of deprecated mongoose options (if any).
+- Ensure all async calls are awaited properly.
+
+Next Steps:
+- Confirm this plan with the user.
+- Upon confirmation, proceed with code corrections and improvements.
+
+Please confirm if I can proceed with this plan.

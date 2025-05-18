@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+/* import Navbar from './Navbar.jsx'; */
+* {
+    margin: 0;
+    /* padding: 0; */
+    box-sizing: border-box;
+    h2,h3 {
+      /* font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif ; */
+     /* font-family: Arial, Helvetica, sans-serif; */
+     font-family: "Cinzel", serif;
+    }
+   
+    font-family: "Cinzel", serif;
+    scroll-behavior: smooth;
+
+    /* background: linear-gradient(to bottom, #fffaf5, #ffe2db, #ffd1b3); */
+
+   /* background-color: rgb(253, 247, 238); */
+   /* background-color: #ffe2db ; */
+  }
+
+/* @media (max-width: 768px) {
+  * {
+    /* Example global adjustments for mobile */
+    /* font-size: 14px; */
+
+  /* }
+
+/* } */ 
+
+
+/* @media (max-width: 800px) {
+  *{margin-bottom: 60px;}} */ 
+
+/* Add styles for main content wrapper */
+/* #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+main {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+} */
